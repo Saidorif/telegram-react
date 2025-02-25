@@ -1467,7 +1467,8 @@ function canSendMediaMessages(chatId) {
     if (!type) return false;
     if (!globalPermissions) return false;
 
-    const { can_send_media_messages } = globalPermissions;
+    // const { can_send_media_messages } = globalPermissions;
+    const { can_send_documents } = globalPermissions;
 
     switch (type['@type']) {
         case 'chatTypeBasicGroup': {
@@ -1496,7 +1497,7 @@ function canSendMediaMessages(chatId) {
                     return true;
                 }
                 case 'chatMemberStatusRestricted': {
-                    return is_member && permissions && permissions.can_send_media_messages;
+                    return is_member && permissions && permissions.can_send_documents;
                 }
             }
 
@@ -1504,7 +1505,7 @@ function canSendMediaMessages(chatId) {
         }
         case 'chatTypePrivate':
         case 'chatTypeSecret': {
-            return can_send_media_messages;
+            return can_send_documents;
         }
         case 'chatTypeSupergroup': {
             const supergroup = SupergroupStore.get(chat.type.supergroup_id);
@@ -1523,16 +1524,16 @@ function canSendMediaMessages(chatId) {
                     return false;
                 }
                 case 'chatMemberStatusCreator': {
-                    return is_member; //can_send_media_messages && is_member;
+                    return is_member; //can_send_documents && is_member;
                 }
                 case 'chatMemberStatusLeft': {
                     return false;
                 }
                 case 'chatMemberStatusMember': {
-                    return can_send_media_messages && !supergroup.is_channel;
+                    return can_send_documents && !supergroup.is_channel;
                 }
                 case 'chatMemberStatusRestricted': {
-                    return can_send_media_messages && is_member && permissions && permissions.can_send_media_messages;
+                    return can_send_documents && is_member && permissions && permissions.can_send_documents;
                 }
             }
         }

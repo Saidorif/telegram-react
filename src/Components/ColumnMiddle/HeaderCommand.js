@@ -67,10 +67,11 @@ class HeaderCommand extends React.Component {
                 canBeDeleted = false;
                 break;
             }
-            if (!message.can_be_deleted_only_for_self && !message.can_be_deleted_for_all_users) {
-                canBeDeleted = false;
-                break;
-            }
+            // console.log('CANBEDELETED:', message);
+            // if (!message.can_be_deleted_only_for_self && !message.can_be_deleted_for_all_users) {
+            //     canBeDeleted = false;
+            //     break;
+            // }
         }
 
         let canBeForwarded = true;
@@ -80,7 +81,7 @@ class HeaderCommand extends React.Component {
                 canBeForwarded = false;
                 break;
             }
-            if (!message.can_be_forwarded) {
+            if (message.noforwards) {
                 canBeForwarded = false;
                 break;
             }

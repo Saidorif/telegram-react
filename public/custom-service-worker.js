@@ -7,7 +7,8 @@
 // import TdClient from 'tdweb/dist/tdweb';
 // import packageJson from '../package';
 // importScripts('./tdweb.js');
-// importScripts('./subworkers.js');
+// importScripts('./subae50b5ad03fbc1bebce4.worker.jss.js');
+// importScripts('./ae50b5ad03fbc1bebce4.worker.js')
 
 const STREAM_CHUNK_VIDEO_512_LIMIT = 512 * 1024 * 1024;
 const STREAM_CHUNK_VIDEO_1024_LIMIT = 1024 * 1024 * 1024;

@@ -15,6 +15,7 @@
     "iframe-resizer": "^4.2.10",
     "notistack": "^0.9.14",
     "opus-media-recorder": "^0.8.0",
+    "or": "^0.2.0",
     "qr-code-styling": "^1.0.1",
     "react": "^16.12.0",
     "react-cropper": "^2.0.0",
@@ -23,7 +24,7 @@
     "react-router-dom": "^5.0.0",
     "react-scripts": "^3.1.1",
     "react-transition-group": "^4.3.0",
-    "tdweb": "^1.7.10"
+    "@sayyid2112/tdweb": "^1.8.45"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json,css}": [
@@ -39,7 +40,9 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "stats": "react-app-rewired build --bundle-report && npx webpack-bundle-analyzer ./build/bundle-stats.json"
+    "stats": "react-app-rewired build --bundle-report && npx webpack-bundle-analyzer ./build/bundle-stats.json",
+    "start-legacy": "export NODE_OPTIONS=--openssl-legacy-provider && react-app-rewired start",
+    "deploy-legacy": "export NODE_OPTIONS=--openssl-legacy-provider && gh-pages -d build"
   },
   "devDependencies": {
     "customize-cra": "^0.9.1",

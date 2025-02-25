@@ -18,6 +18,7 @@ import './Status.css';
 
 class Status extends React.Component {
     state = {};
+    _isMounted = false;
 
     static getDerivedStateFromProps(props, state) {
         const { chatId, messageId } = props;
@@ -38,6 +39,7 @@ class Status extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
         ChatStore.on('updateChatReadOutbox', this.onUpdateChatReadOutbox);
 
         MessageStore.on('updateMessageSendFailed', this.onUpdateMessageSend);
@@ -46,6 +48,7 @@ class Status extends React.Component {
     }
 
     componentWillUnmount() {
+        this._isMounted = false;
         ChatStore.off('updateChatReadOutbox', this.onUpdateChatReadOutbox);
 
         MessageStore.off('updateMessageSendFailed', this.onUpdateMessageSend);
@@ -54,6 +57,7 @@ class Status extends React.Component {
     }
 
     onUpdateMessageSendAcknowledged = update => {
+        if (!this._isMounted) return;
         const { chatId, messageId } = this.props;
         const { chat_id, message_id } = update;
 
@@ -64,6 +68,7 @@ class Status extends React.Component {
     };
 
     onUpdateMessageSend = update => {
+        if (!this._isMounted) return;
         const { chatId, messageId } = this.props;
         const { old_message_id, message } = update;
 
@@ -78,6 +83,7 @@ class Status extends React.Component {
     };
 
     onUpdateChatReadOutbox = update => {
+        if (!this._isMounted) return;
         const { chatId, messageId } = this.props;
         const { chat_id, last_read_outbox_message_id } = update;
         const { newMessageId } = this;

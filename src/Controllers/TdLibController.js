@@ -17,7 +17,8 @@ import {
     WASM_FILE_HASH,
     WASM_FILE_NAME
 } from '../Constants';
-import TdClient from 'tdweb/dist/tdweb';
+import TdClient from '@sayyid2112/tdweb/dist/tdweb';
+// import TdClient from 'tdweb/dist/tdweb';
 // import TdClient from '@arseny30/tdweb/dist/tdweb';
 // import TdClient from '../../public/tdweb';
 
@@ -214,21 +215,21 @@ class TdLibController extends EventEmitter {
 
         this.send({
             '@type': 'setTdlibParameters',
-            parameters: {
-                '@type': 'tdParameters',
-                use_test_dc: useTestDC,
-                api_id: apiId,
-                api_hash: apiHash,
-                system_language_code: navigator.language || 'en',
-                device_model: getBrowser(),
-                system_version: getOSName(),
-                application_version: version,
-                use_secret_chats: false,
-                use_message_database: true,
-                use_file_database: false,
-                database_directory: '/db',
-                files_directory: '/'
-            }
+            //parameters: {
+                //'@type': 'tdParameters',
+                'use_test_dc': useTestDC,
+                'api_id': apiId,
+                'api_hash': apiHash,
+                'system_language_code': navigator.language || 'en',
+                'device_model': getBrowser(),
+                'system_version': getOSName(),
+                'application_version': version,
+                'use_secret_chats': false,
+                'use_message_database': true,
+                'use_file_database': false,
+                'database_directory': '/db',
+                'files_directory': '/'
+            //}
             // ,
             // extra: {
             //     a: ['a', 'b'],
