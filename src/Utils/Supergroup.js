@@ -63,7 +63,22 @@ export function isPublicSupergroup(chatId) {
     const supergroup = SupergroupStore.get(supergroupId);
     if (!supergroup) return false;
 
-    const { username } = supergroup;
+    //{
+    //     "@type": "usernames",
+    //     "active_usernames": [
+    //         "uzmdk"
+    //     ],
+    //     "disabled_usernames": [],
+    //     "editable_username": "uzmdk"
+    // }
 
-    return Boolean(username);
+    const { active_usernames } = supergroup;
+    if (active_usernames && active_usernames.length > 0) {
+        return true;
+    }
+    return false;
+
+    // const { username } = supergroup;
+
+    // return Boolean(username);
 }

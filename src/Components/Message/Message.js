@@ -378,7 +378,9 @@ class Message extends Component {
         const message = MessageStore.get(chatId, messageId);
         if (!message) return <div>[empty message]</div>;
 
-        const { content, is_outgoing, date, reply_to_message_id, forward_info, sender_id, reply_markup } = message;
+        const { content, is_outgoing, date, forward_info, sender_id, reply_markup } = message;
+        const reply_to = message.reply_to;
+        const reply_to_message_id = reply_to ? reply_to.message_id : null;
 
         const isOutgoing = is_outgoing && !isChannelChat(chatId);
         const inlineMeta = (

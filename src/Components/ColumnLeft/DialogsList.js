@@ -427,7 +427,8 @@ class DialogsList extends React.Component {
 
         const { chats } = this.state;
 
-        const newChats = (chats || []).concat(chatIds);
+        //const newChats = (chats || []).concat(chatIds);
+        const newChats = ([]).concat(chatIds);
         this.setState({ chats: newChats }, callback);
     }
 

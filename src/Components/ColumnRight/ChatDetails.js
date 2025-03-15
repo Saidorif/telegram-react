@@ -477,7 +477,7 @@ class ChatDetails extends React.Component {
                                             <ErrorOutlineIcon className='chat-details-info-icon' />
                                         </ListItemIcon>
                                         <ListItemText
-                                            primary={bio}
+                                            primary={bio.text}
                                             secondary={isPrivateChat(chatId) ? t('Bio') : t('DescriptionPlaceholder')}
                                             style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
                                         />

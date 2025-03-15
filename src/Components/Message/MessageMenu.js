@@ -224,6 +224,39 @@ class MessageMenu extends React.PureComponent {
         saveBlob(blob, 'sticker.tgs');
     };
 
+    handleCopyText = event => {
+        const { chatId, messageId, onClose, t } = this.props;
+
+        onClose(event);
+
+        const message = MessageStore.get(chatId, messageId);
+        if (!message || !message.content) return;
+
+        let text = null;
+
+        if (message.content['@type'] === 'messageText') {
+            text = message.content.text && message.content.text.text;
+        } else if (message.content['@type'] === 'messagePhoto' && message.content.caption) {
+            text = message.content.caption && message.content.caption.text;
+        }
+
+        if (!text) return;
+
+        copy(text);
+        this.handleScheduledAction(t('TextCopied'));
+    };
+
+    handleCanCopyText = () => {
+        const { chatId, messageId } = this.props;
+        const message = MessageStore.get(chatId, messageId);
+        if (!message || !message.content) return false;
+
+        return (
+            (message.content['@type'] === 'messageText' && message.content.text && message.content.text.text) ||
+            (message.content['@type'] === 'messagePhoto' && message.content.caption && message.content.caption.text)
+        );
+    }
+
     render() {
         const { t, chatId, messageId, anchorPosition, copyLink, open, onClose, source } = this.props;
         const { confirmStopPoll } = this.state;
@@ -240,9 +273,10 @@ class MessageMenu extends React.PureComponent {
         const canBeSelected = !MessageStore.hasSelectedMessage(chatId, messageId) && !isServiceMessage(MessageStore.get(chatId, messageId));
         const canCopyLink = Boolean(copyLink);
         const canCopyPublicMessageLink = isPublicSupergroup(chatId);
+        const canCopyText = this.handleCanCopyText();
 
         const hasItems =
-            canBeUnvoted || canBeClosed || canBeReplied || canBePinned || canBeForwarded || canBeDeleted || canBeEdited || canBeSelected || canCopyLink || canCopyPublicMessageLink;
+            canBeUnvoted || canBeClosed || canBeReplied || canBePinned || canBeForwarded || canBeDeleted || canBeEdited || canBeSelected || canCopyLink || canCopyPublicMessageLink || canCopyText;
         if (!hasItems) {
             return null;
         }
@@ -292,6 +326,14 @@ class MessageMenu extends React.PureComponent {
                                     <CopyIcon />
                                 </ListItemIcon>
                                 <ListItemText primary={t('CopyLink')} />
+                            </MenuItem>
+                        )}
+                        {canCopyText && (
+                            <MenuItem onClick={this.handleCopyText}>
+                                <ListItemIcon>
+                                    <CopyIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={t('CopyText')} />
                             </MenuItem>
                         )}
                         {canBeReplied && (

@@ -53,6 +53,7 @@ class ChatInfo extends React.Component {
     }
 
     componentDidMount() {
+        this.isMountedFlag = true;
         this.loadContent(this.state.chatId);
 
         AppStore.on('clientUpdateChatId', this.onClientUpdateChatId);
@@ -60,6 +61,7 @@ class ChatInfo extends React.Component {
     }
 
     componentWillUnmount() {
+        this.isMountedFlag = false;
         AppStore.off('clientUpdateChatId', this.onClientUpdateChatId);
         AppStore.off('clientUpdatePageWidth', this.onClientUpdatePageWidth);
     }
@@ -129,9 +131,9 @@ class ChatInfo extends React.Component {
         const counters = await getChatCounters(chatId);
         ChatStore.setCounters(chatId, counters);
 
-        if (chatId !== this.state.chatId) return;
-
-        this.setState({ counters });
+        if (this.isMountedFlag && chatId === this.state.chatId) {
+            this.setState({ counters });
+        }
     };
 
     loadMigratedCounters = async chatId => {
@@ -154,9 +156,9 @@ class ChatInfo extends React.Component {
         const counters = await getChatCounters(chat.id);
         ChatStore.setCounters(chat.id, counters);
 
-        if (this.state.chatId !== chatId) return;
-
-        this.setState({ migratedChatId: chat.id, migratedCounters: ChatStore.getCounters(chat.id) });
+        if (this.isMountedFlag && this.state.chatId === chatId) {
+            this.setState({ migratedChatId: chat.id, migratedCounters: ChatStore.getCounters(chat.id) });
+        }
     };
 
     handleOpenSharedMedia = () => {

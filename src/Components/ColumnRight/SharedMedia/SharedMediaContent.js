@@ -112,7 +112,11 @@ class SharedMediaContent extends React.Component {
 
         switch (selectedIndex) {
             case 0: {
-                const { user_id: id } = item;
+                const { member_id: { user_id: id } = {} } = item;
+                if (!id) {
+                    console.warn('User ID is undefined', item);
+                    return null;
+                }
                 return (
                     <ListItem
                         button

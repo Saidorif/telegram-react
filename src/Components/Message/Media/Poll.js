@@ -174,6 +174,7 @@ class Poll extends React.Component {
         const { chatId, messageId, poll, t, meta } = this.props;
         const { viewResultsPoll } = this.state;
         const { question, options, total_voter_count, type, is_closed, is_anonymous, recent_voter_user_ids } = poll;
+        const displayQuestion = typeof question === 'object' ? question.text : question;
 
         let subtitle = t('FinalResults');
         if (!is_closed) {
@@ -208,7 +209,7 @@ class Poll extends React.Component {
             <div className='poll'>
                 {isQuiz && <FireworksComponent ref={this.fireworksRef} />}
                 <div className='poll-question'>
-                    <div className='poll-question-title'>{question}</div>
+                    <div className='poll-question-title'>{displayQuestion}</div>
                     <div className='poll-question-subtitle'>
                         <span style={{ marginRight: 6 }}>{subtitle}</span>
                         {recentVoters}

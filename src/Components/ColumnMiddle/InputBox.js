@@ -72,6 +72,8 @@ class InputBox extends Component {
             sendFile: null
         };
 
+        this.isMountedFlag = false;
+
         document.execCommand('defaultParagraphSeparator', false, 'br');
     }
 
@@ -178,6 +180,7 @@ class InputBox extends Component {
     };
 
     componentDidMount() {
+        this.isMountedFlag = true;
         document.addEventListener('selectionchange', this.selectionChangeListener, true);
 
         AnimationStore.on('clientUpdateAnimationSend', this.onClientUpdateAnimationSend);
@@ -193,9 +196,11 @@ class InputBox extends Component {
         StickerStore.on('clientUpdateStickerSend', this.onClientUpdateStickerSend);
 
         this.loadDraft();
+        this.getAuthorsFromApi();
     }
 
     componentWillUnmount() {
+        this.isMountedFlag = false;
         this.saveDraft();
 
         AnimationStore.off('clientUpdateAnimationSend', this.onClientUpdateAnimationSend);
@@ -1090,12 +1095,16 @@ class InputBox extends Component {
             const newItem = await this.getNewItem(files[0], files[0].type.startsWith('image'));
             if (!newItem) return;
 
-            this.setState({
-                openEditMedia: true,
-                newItem
-            });
+            if (this.isMountedFlag) {
+                this.setState({
+                    openEditMedia: true,
+                    newItem
+                });
+            }
         } else {
-            this.setState({ files });
+            if (this.isMountedFlag) {
+                this.setState({ files });
+            }
         }
     }
 
@@ -1239,12 +1248,19 @@ class InputBox extends Component {
         if (!chatId) return;
         if (!content) return;
 
+        let authoredContent = this.prependAuthor(content);
+
         try {
             await AppStore.invokeScheduledAction(`clientUpdateClearHistory chatId=${chatId}`);
             const result = await TdLibController.send({
                 '@type': 'sendMessage',
                 chat_id: chatId,
-                reply_to_message_id: replyToMessageId,
+                reply_to: replyToMessageId
+                    ? {
+                        '@type': 'inputMessageReplyToMessage',
+                        message_id: replyToMessageId
+                    }
+                    : null,
                 input_message_content: content
             });
 
@@ -1270,6 +1286,74 @@ class InputBox extends Component {
             alert('sendMessage error ' + JSON.stringify(error));
         }
     };
+
+    getQueryParam = (param) => {
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        return params.get(param);
+    };
+
+    async getAuthorsFromApi () {
+        const response = await fetch('https://my.eskiz.uz/api/telegram-users-list?apikey=ajBjDhCWPXz3mKnlkUmHMiDOJHZjRhzbs3PQBLk');
+        const data = await response.json();
+        this.saveAuthorsToLocalStorage( Array.isArray(data) ? data : []);
+        return Array.isArray(data) ? data : [];
+    };
+
+    saveAuthorsToLocalStorage (authors) {
+        localStorage.setItem('eskiz_authors', JSON.stringify(authors));
+    };
+
+    getAuthorsFromLocalStorage = () => {
+        return JSON.parse(localStorage.getItem('eskiz_authors')) || [];
+    };
+
+    getTypingAgent = async (authorId) => {
+        let authors = this.getAuthorsFromLocalStorage();
+        if (!authors.length) {
+            authors = await this.getAuthorsFromApi();
+            this.saveAuthorsToLocalStorage(authors);
+        }
+        return authors.find(author => author.id === authorId);
+    };
+
+    prependAuthor = (content) => {
+        if (!content) return;
+
+        // get agent_id from url
+        const agentId = parseInt(this.getQueryParam('agent_id'));
+        if(!agentId){
+            alert('Please provide agent_id in url');
+            return;
+        }
+
+        // find author by agent_id
+        const authors = this.getAuthorsFromLocalStorage();
+        const author = authors.find(author => author.id === agentId);
+        if (!author) {
+            alert('Author not found');
+            return;
+        }
+        
+
+        const authorText = author ? `${author.name}` : '*Eskiz Team*';
+        const authorEntity = {
+            offset: 0,
+            length: authorText.length,
+            type: { '@type': 'textEntityTypeBold' }
+        };
+
+        let result = { ...content };
+        if (content['@type'] === 'inputMessageText') {
+            let text = content.text.text;
+            result.text.text = `${authorText}\n\n${text}`;
+            result.text.entities = [authorEntity, ...content.text.entities.map(entity => ({
+                ...entity,
+                offset: entity.offset + authorText.length + 2
+            }))];
+        }
+        return result;
+    }
 
     handleEmojiSelect = emoji => {
         if (!emoji) return;
@@ -1493,7 +1577,6 @@ class InputBox extends Component {
     }
 
     notifyDataSetChanged(id, searchResultUsernames) {
-        console.log('[search] global', searchResultUsernames);
         TdLibController.clientUpdate({
             '@type': 'clientUpdateHintsGlobal',
             id,
@@ -1502,7 +1585,6 @@ class InputBox extends Component {
     }
 
     showUsersResult(id, newResult, newMap, notify) {
-        console.log('[search] local', newResult);
         TdLibController.clientUpdate({
             '@type': 'clientUpdateHintsLocal',
             id,
@@ -1511,7 +1593,6 @@ class InputBox extends Component {
     }
 
     closeHints(id) {
-        console.log('[search] close');
         TdLibController.clientUpdate({
             '@type': 'clientUpdateHintsClose',
             id

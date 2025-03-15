@@ -40,7 +40,9 @@ class PollOption extends React.Component {
         const { option, onChange, canBeSelected, closed, maxVoterCount, t, type, isCorrect } = this.props;
         if (!option) return null;
 
-        const { text, voter_count, vote_percentage, is_chosen, isMultiChoosen, is_being_chosen } = option;
+        let { text, voter_count, vote_percentage, is_chosen, isMultiChoosen, is_being_chosen } = option;
+        // if text is object, use text.text
+        const displayText = typeof text === 'object' ? text.text : text;
 
         let value = 1.5;
         if (voter_count) {
@@ -76,7 +78,7 @@ class PollOption extends React.Component {
                                 )}
                             </div>
                         )}
-                        <div className='poll-option-text'>{text}</div>
+                        <div className='poll-option-text'>{displayText}</div>
                     </div>
                 </div>
                 <LinearProgress

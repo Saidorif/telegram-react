@@ -85,8 +85,7 @@ class Filters extends React.Component {
         }
 
         const recommendedFilters = await TdLibController.send({
-            // '@type': 'getRecommendedChatFilters'
-            '@type': 'getChatFilters'
+            '@type': 'getRecommendedChatFilters'
         });
 
         this.setState({
@@ -222,8 +221,7 @@ class Filters extends React.Component {
         const { t, onClose } = this.props;
         const { recommendedFilters, openFilter, filter, filterId, data, chats, filtersMap } = this.state;
         const { filters } = FilterStore;
-
-        console.log('FILTERS:', recommendedFilters);
+        
 
         const hasFilters = filters && filters.length > 0;
         const hasRecommendedFilters = recommendedFilters

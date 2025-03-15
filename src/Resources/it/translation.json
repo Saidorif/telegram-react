@@ -71,5 +71,6 @@
   "VoiceTitle": "Messaggi vocali",
   "WaitingForNetwork": "Attendo la rete...",
   "YourAccountProtectedWithPassword": "Il tuo account è protetto con una password aggiuntiva.",
-  "YourPhone": "Il tuo numero"
+  "YourPhone": "Il tuo numero",
+  "CopyText": "Copia testo"
 }

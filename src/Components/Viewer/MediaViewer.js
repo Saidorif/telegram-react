@@ -125,6 +125,7 @@ class MediaViewer extends React.Component {
     }
 
     componentDidMount() {
+        this.isMountedFlag = true;
         this.loadHistory();
 
         KeyboardManager.add(this.keyboardHandler);
@@ -134,6 +135,7 @@ class MediaViewer extends React.Component {
     }
 
     componentWillUnmount() {
+        this.isMountedFlag = false;
         KeyboardManager.remove(this.keyboardHandler);
         MessageStore.off('updateDeleteMessages', this.onUpdateDeleteMessages);
         MessageStore.off('updateNewMessage', this.onUpdateNewMessage);
@@ -225,11 +227,13 @@ class MediaViewer extends React.Component {
             }
 
             const index = this.history.findIndex(x => x.id === currentMessageId);
-            this.setState({
-                hasNextMedia: this.hasNextMedia(index),
-                hasPreviousMedia: this.hasPreviousMedia(index),
-                totalCount: totalCount + 1
-            });
+            if (this.isMountedFlag) {
+                this.setState({
+                    hasNextMedia: this.hasNextMedia(index),
+                    hasPreviousMedia: this.hasPreviousMedia(index),
+                    totalCount: totalCount + 1
+                });
+            }
         }
 
         const removeMessage = !isMediaContent(new_content) && isMediaContent(old_content);
@@ -242,16 +246,20 @@ class MediaViewer extends React.Component {
                 filterMap.set(message_id, message_id);
 
                 this.moveToNextMedia(oldHistory, filterMap);
-                this.setState({
-                    totalCount: Math.max(totalCount - 1, 0)
-                });
+                if (this.isMountedFlag) {
+                    this.setState({
+                        totalCount: Math.max(totalCount - 1, 0)
+                    });
+                }
             } else {
                 const index = this.history.findIndex(x => x.id === currentMessageId);
-                this.setState({
-                    hasNextMedia: this.hasNextMedia(index),
-                    hasPreviousMedia: this.hasPreviousMedia(index),
-                    totalCount: Math.max(totalCount - 1, 0)
-                });
+                if (this.isMountedFlag) {
+                    this.setState({
+                        hasNextMedia: this.hasNextMedia(index),
+                        hasPreviousMedia: this.hasPreviousMedia(index),
+                        totalCount: Math.max(totalCount - 1, 0)
+                    });
+                }
             }
         }
     };

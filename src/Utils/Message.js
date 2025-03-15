@@ -2748,9 +2748,10 @@ export function canMessageBeEdited(chatId, messageId) {
     const message = MessageStore.get(chatId, messageId);
     if (!message) return false;
 
-    const { can_be_edited } = message;
+    const { is_outgoing, content } = message;
+    if (!content) return false;
 
-    return can_be_edited;
+    return is_outgoing && content['@type'] === 'messageText';
 }
 
 export function showMessageForward(chatId, messageId) {
@@ -2776,7 +2777,7 @@ export function isTextMessage(chatId, messageId) {
 export function isMessagePinned(chatId, messageId) {
     const message = MessageStore.get(chatId, messageId);
 
-    return message && message.is_pinned;
+    return message && message.pinned;
 }
 
 export function canMessageBeUnvoted(chatId, messageId) {
@@ -2802,23 +2803,28 @@ export function canMessageBeClosed(chatId, messageId) {
     const message = MessageStore.get(chatId, messageId);
     if (!message) return false;
 
-    const { content, can_be_edited } = message;
-    if (!content) return;
-    if (content['@type'] !== 'messagePoll') return;
+    const { content, is_outgoing } = message;
+    if (!content) return false;
+    if (content['@type'] !== 'messagePoll') return false;
 
-    return can_be_edited;
+    return is_outgoing;
 }
 
 export function canMessageBeForwarded(chatId, messageId) {
     const message = MessageStore.get(chatId, messageId);
 
-    return message && message.can_be_forwarded;
+    return message && message.noforwards !== true;
 }
 
 export function canMessageBeDeleted(chatId, messageId) {
     const message = MessageStore.get(chatId, messageId);
+    if (!message) return false;
 
-    return message && (message.can_be_deleted_only_for_self || message.can_be_deleted_for_all_users);
+    //const { can_be_deleted_for_all_users, can_be_deleted_only_for_self } = message;
+    const { is_outgoing } = message;
+    
+
+    return is_outgoing;
 }
 
 export function getMessageStyle(chatId, messageId) {

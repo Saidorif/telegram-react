@@ -72,5 +72,6 @@
   "VoiceTitle": "Голосовые сообщения",
   "WaitingForNetwork": "Ожидание сети...",
   "YourAccountProtectedWithPassword": "Ваш аккаунт защищен дополнительным паролем.",
-  "YourPhone": "Ваш телефон"
+  "YourPhone": "Ваш телефон",
+  "CopyText": "Копировать текст"
 }

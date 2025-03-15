@@ -90,6 +90,8 @@ class MessageAuthor extends React.Component {
     handleSelect = event => {
         const { sender, openUser, openChat, forwardInfo } = this.props;
 
+        if (!sender) return;
+
         let { user_id: userId, chat_id: chatId } = sender;
 
         if (isMeChat(chatId) && forwardInfo) {
@@ -128,6 +130,8 @@ class MessageAuthor extends React.Component {
     render() {
         const { sender, openUser, openChat, forwardInfo, t } = this.props;
         let { fullName } = this.state;
+
+        if (!sender) return null;
 
         let { chat_id: chatId, user_id: userId } = sender;
 

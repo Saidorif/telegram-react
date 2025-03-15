@@ -531,7 +531,6 @@ function getMessageSenderName(message, t = k => k) {
             }
 
             if (!sender_id) {
-                console.log('[sender_id] empty', message);
                 return null;
             }
 
@@ -1715,7 +1714,7 @@ function canSendMessages(chatId) {
     if (!type) return false;
     if (!globalPermissions) return false;
 
-    const { can_send_messages } = globalPermissions;
+    const { can_send_basic_messages } = globalPermissions;
 
     switch (type['@type']) {
         case 'chatTypeBasicGroup': {
@@ -1744,7 +1743,7 @@ function canSendMessages(chatId) {
                     return true;
                 }
                 case 'chatMemberStatusRestricted': {
-                    return is_member && permissions && permissions.can_send_messages;
+                    return is_member && permissions && permissions.can_send_basic_messages;
                 }
             }
 
@@ -1752,7 +1751,7 @@ function canSendMessages(chatId) {
         }
         case 'chatTypePrivate':
         case 'chatTypeSecret': {
-            return can_send_messages;
+            return can_send_basic_messages;
         }
         case 'chatTypeSupergroup': {
             const supergroup = SupergroupStore.get(type.supergroup_id);
@@ -1771,16 +1770,16 @@ function canSendMessages(chatId) {
                     return false;
                 }
                 case 'chatMemberStatusCreator': {
-                    return is_member; //can_send_messages && is_member;
+                    return is_member; //can_send_basic_messages && is_member;
                 }
                 case 'chatMemberStatusLeft': {
                     return false;
                 }
                 case 'chatMemberStatusMember': {
-                    return can_send_messages && !supergroup.is_channel;
+                    return can_send_basic_messages && !supergroup.is_channel;
                 }
                 case 'chatMemberStatusRestricted': {
-                    return can_send_messages && is_member && permissions && permissions.can_send_messages;
+                    return can_send_basic_messages && is_member && permissions && permissions.can_send_basic_messages;
                 }
             }
         }

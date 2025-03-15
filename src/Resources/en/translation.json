@@ -98,5 +98,6 @@
   "WaitingForNetwork": "Waiting for network...",
   "WriteChatCant": "Sorry, no way to write here :(",
   "YourAccountProtectedWithPassword": "Your account is protected with an additional password.",
-  "YourPhone": "Your Phone"
+  "YourPhone": "Your Phone",
+  "CopyText": "Copy Text"
 }

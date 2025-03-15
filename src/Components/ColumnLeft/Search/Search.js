@@ -43,12 +43,14 @@ class Search extends React.Component {
     componentDidMount() {
         const { text } = this.props;
 
+        this.isMountedFlag = true;
         this.searchOrLoadContent(text);
 
         KeyboardManager.add(this.keyboardHandler);
     }
 
     componentWillUnmount() {
+        this.isMountedFlag = false;
         KeyboardManager.remove(this.keyboardHandler);
     }
 
@@ -158,7 +160,7 @@ class Search extends React.Component {
             const results = await Promise.all(promises.map(x => x.catch(e => null)));
             const local = this.concatSearchResults(results);
 
-            if (sessionId !== this.sessionId) {
+            if (sessionId !== this.sessionId || !this.isMountedFlag) {
                 return;
             }
 
@@ -213,7 +215,7 @@ class Search extends React.Component {
                 const globalResults = await Promise.all(globalPromises.map(x => x.catch(e => null)));
                 const global = this.concatSearchResults(globalResults);
 
-                if (sessionId !== this.sessionId) {
+                if (sessionId !== this.sessionId || !this.isMountedFlag) {
                     return;
                 }
 
@@ -275,7 +277,7 @@ class Search extends React.Component {
 
         // console.log('[se] searchText=' + text + ' result', messages, linkMessage);
 
-        if (sessionId !== this.sessionId) {
+        if (sessionId !== this.sessionId || !this.isMountedFlag) {
             return;
         }
 
@@ -354,6 +356,10 @@ class Search extends React.Component {
             recentlyFoundPromise,
             savedMessagesPromise
         ]);
+
+        if (!this.isMountedFlag) {
+            return;
+        }
 
         this.setState({
             top,
