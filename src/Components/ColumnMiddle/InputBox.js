@@ -49,6 +49,13 @@ import StickerStore from '../../Stores/StickerStore';
 import UserStore from '../../Stores/UserStore';
 import TdLibController from '../../Controllers/TdLibController';
 import './InputBox.css';
+import Modal from '@material-ui/core/Modal';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Tooltip from '@material-ui/core/Tooltip';
+import NoteIcon from '@material-ui/icons/Note';
+import Box from '@material-ui/core/Box';
 
 const EmojiPickerButton = React.lazy(() => import('./../ColumnMiddle/EmojiPickerButton'));
 
@@ -69,7 +76,9 @@ class InputBox extends Component {
             recordingReady: true,
             recordingTime: null,
             recordPermissionDenied: false,
-            sendFile: null
+            sendFile: null,
+            templates: [],
+            isTemplateModalOpen: false,
         };
 
         this.isMountedFlag = false;
@@ -91,7 +100,9 @@ class InputBox extends Component {
             recordingReady,
             recordingTime,
             recordPermissionDenied,
-            shook
+            shook,
+            templates,
+            isTemplateModalOpen
         } = this.state;
 
         if (nextProps.t !== t) {
@@ -143,6 +154,14 @@ class InputBox extends Component {
         }
 
         if (nextState.shook !== shook) {
+            return true;
+        }
+
+        if (nextState.templates !== templates) {
+            return true;
+        }
+
+        if (nextState.isTemplateModalOpen !== isTemplateModalOpen) {
             return true;
         }
 
@@ -1322,7 +1341,7 @@ class InputBox extends Component {
 
         // get agent_id from url
         const agentId = parseInt(this.getQueryParam('agent_id'));
-        if(!agentId){
+        if (!agentId) {
             alert('Please provide agent_id in url');
             return;
         }
@@ -1334,13 +1353,12 @@ class InputBox extends Component {
             alert('Author not found');
             return;
         }
-        
 
         const authorText = author ? `${author.name}` : '*Eskiz Team*';
         const authorEntity = {
             offset: 0,
             length: authorText.length,
-            type: { '@type': 'textEntityTypeBold' }
+            type: { '@type': 'textEntityTypeUnderline' }
         };
 
         let result = { ...content };
@@ -1928,6 +1946,27 @@ class InputBox extends Component {
         })
     };
 
+    toggleTemplateModal = async () => {
+        const { isTemplateModalOpen } = this.state;
+        if (!isTemplateModalOpen) {
+            const response = await fetch('https://my.eskiz.uz/api/telegram-templates-list?apikey=ajBjDhCWPXz3mKnlkUmHMiDOJHZjRhzbs3PQBLk');
+            const templates = await response.json();
+            this.setState({ templates });
+        }
+        this.setState({ isTemplateModalOpen: !isTemplateModalOpen });
+    };
+
+    copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            const inputBox = this.newMessageRef.current;
+            if (inputBox) {
+                inputBox.focus();
+                document.execCommand('insertText', false, text); // Paste the text into the input box
+            }
+            this.setState({ isTemplateModalOpen: false }); // Close the modal
+        });
+    };
+
     render() {
         const { t } = this.props;
         const {
@@ -1944,7 +1983,9 @@ class InputBox extends Component {
             recordingReady,
             recordingTime,
             recordPermissionDenied,
-            shook
+            shook,
+            templates,
+            isTemplateModalOpen
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1973,6 +2014,15 @@ class InputBox extends Component {
                                     }>
                                     <EmojiPickerButton onSelect={this.handleEmojiSelect} />
                                 </React.Suspense>
+                                <Tooltip title="Templates">
+                                    <IconButton
+                                        className='inputbox-icon-button'
+                                        aria-label='Templates'
+                                        onClick={this.toggleTemplateModal}
+                                    >
+                                        <NoteIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
                             <div className='inputbox-middle-column'>
                                 <div
@@ -2076,6 +2126,44 @@ class InputBox extends Component {
                         </Button>
                     </DialogActions>
                 </Dialog>
+                <Modal
+                    open={isTemplateModalOpen}
+                    onClose={this.toggleTemplateModal}
+                    aria-labelledby="template-modal-title"
+                    aria-describedby="template-modal-description"
+                >
+                    <Box
+                        className="template-modal"
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 400,
+                            height: 300,
+                            overflowY: 'auto',
+                            backgroundColor: 'rgb(232, 240, 254)',
+                            border: '1px solid #b0b0b0',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            boxShadow: 'rgba(0, 0, 0, 0.4) 0px 4px 20px',
+                            outline: 'none'
+                        }}
+                    >
+                        <h2 id="template-modal-title">Текстовые шаблоны</h2>
+                        <List>
+                            {templates.map((template) => (
+                                <ListItem
+                                    button
+                                    key={template.id}
+                                    onClick={() => this.copyToClipboard(template.body)}
+                                >
+                                    <ListItemText primary={template.title} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Box>
+                </Modal>
             </div>
         );
     }
