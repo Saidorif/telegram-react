@@ -30,7 +30,7 @@ export function getFilterSubtitle(t, filterId, chats) {
 
     let count = 0;
     for (let i = 0; i < chats.chat_ids.length; i++) {
-        if (getChatOrder(chats.chat_ids[i], { '@type': 'chatListFilter', chat_filter_id: filterId }) !== '0') {
+        if (getChatOrder(chats.chat_ids[i], { '@type': 'updateChatFolders', chat_filter_id: filterId }) !== '0') {
             count++;
         }
     }

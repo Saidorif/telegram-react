@@ -1280,7 +1280,7 @@ class InputBox extends Component {
                         message_id: replyToMessageId
                     }
                     : null,
-                input_message_content: content
+                input_message_content: authoredContent
             });
 
             this.setState({ replyToMessageId: 0 }, () => {
@@ -1300,10 +1300,35 @@ class InputBox extends Component {
                 replyMessage(chatId, 0);
             }
 
+            // Save message log
+            this.saveMessageLog(authoredContent);
+
             callback(result);
         } catch (error) {
             alert('sendMessage error ' + JSON.stringify(error));
         }
+    };
+
+    saveMessageLog = (content) => {
+        const agentId = parseInt(this.getQueryParam('agent_id'));
+        if (!agentId) return;
+        const { chatId } = this.state;
+        if (!chatId) return;
+
+        const response = fetch('http://cp.eskiz.local/api/v1/telegram/log', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: agentId,
+                chat_id: chatId,
+                type: content['@type']
+            })
+        });
+
+        console.log('Message log saved', response);
     };
 
     getQueryParam = (param) => {
@@ -1315,7 +1340,9 @@ class InputBox extends Component {
     async getAuthorsFromApi () {
         const response = await fetch('https://my.eskiz.uz/api/telegram-users-list?apikey=ajBjDhCWPXz3mKnlkUmHMiDOJHZjRhzbs3PQBLk');
         const data = await response.json();
-        this.saveAuthorsToLocalStorage( Array.isArray(data) ? data : []);
+        if (this.isMountedFlag) { // Check if component is still mounted
+            this.saveAuthorsToLocalStorage( Array.isArray(data) ? data : []);
+        }
         return Array.isArray(data) ? data : [];
     };
 
@@ -1339,39 +1366,54 @@ class InputBox extends Component {
     prependAuthor = (content) => {
         if (!content) return;
 
-        // get agent_id from url
+        // Get agent_id from URL
         const agentId = parseInt(this.getQueryParam('agent_id'));
         if (!agentId) {
-            alert('Please provide agent_id in url');
-            return;
+            alert('Please provide agent_id in URL');
+            return content; // Return the original content if no agent_id is provided
         }
 
-        // find author by agent_id
+        // Find author by agent_id
         const authors = this.getAuthorsFromLocalStorage();
         const author = authors.find(author => author.id === agentId);
         if (!author) {
             alert('Author not found');
-            return;
+            return content; // Return the original content if no author is found
         }
 
-        const authorText = author ? `${author.name}` : '*Eskiz Team*';
+        const authorText = `${author.name}`;
         const authorEntity = {
             offset: 0,
             length: authorText.length,
-            type: { '@type': 'textEntityTypeUnderline' }
+            type: { '@type': 'textEntityTypeUnderline' } // Use bold for better visibility
         };
 
         let result = { ...content };
+
         if (content['@type'] === 'inputMessageText') {
-            let text = content.text.text;
+            // Prepend author to text messages
+            const text = content.text.text;
             result.text.text = `${authorText}\n\n${text}`;
             result.text.entities = [authorEntity, ...content.text.entities.map(entity => ({
                 ...entity,
                 offset: entity.offset + authorText.length + 2
             }))];
+        } else if (content['@type'] === 'inputMessagePhoto' || content['@type'] === 'inputMessageDocument') {
+            // Prepend author to captions for photos and documents
+            const caption = content.caption || { '@type': 'formattedText', text: '', entities: [] };
+            const text = caption.text || '';
+            result.caption = {
+                '@type': 'formattedText',
+                text: `${authorText}\n\n${text}`,
+                entities: [authorEntity, ...caption.entities.map(entity => ({
+                    ...entity,
+                    offset: entity.offset + authorText.length + 2
+                }))]
+            };
         }
+
         return result;
-    }
+    };
 
     handleEmojiSelect = emoji => {
         if (!emoji) return;
@@ -1951,20 +1993,49 @@ class InputBox extends Component {
         if (!isTemplateModalOpen) {
             const response = await fetch('https://my.eskiz.uz/api/telegram-templates-list?apikey=ajBjDhCWPXz3mKnlkUmHMiDOJHZjRhzbs3PQBLk');
             const templates = await response.json();
-            this.setState({ templates });
+            if (this.isMountedFlag) { // Check if component is still mounted
+                this.setState({ templates });
+            }
         }
-        this.setState({ isTemplateModalOpen: !isTemplateModalOpen });
+        if (this.isMountedFlag) { // Check if component is still mounted
+            this.setState({ isTemplateModalOpen: !isTemplateModalOpen });
+        }
     };
 
     copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text).then(() => {
-            const inputBox = this.newMessageRef.current;
-            if (inputBox) {
-                inputBox.focus();
-                document.execCommand('insertText', false, text); // Paste the text into the input box
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                const inputBox = this.newMessageRef.current;
+                if (inputBox) {
+                    inputBox.focus();
+                    document.execCommand('insertText', false, text); // Paste the text into the input box
+                }
+                this.setState({ isTemplateModalOpen: false }); // Close the modal
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        } else {
+            // Fallback for unsupported environments
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed'; // Prevent scrolling to bottom
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const inputBox = this.newMessageRef.current;
+                if (inputBox) {
+                    inputBox.focus();
+                    document.execCommand('insertText', false, text); // Paste the text into the input box
+                }
+                this.setState({ isTemplateModalOpen: false }); // Close the modal
+            } catch (err) {
+                console.error('Fallback: Failed to copy text: ', err);
             }
-            this.setState({ isTemplateModalOpen: false }); // Close the modal
-        });
+            document.body.removeChild(textarea);
+        }
     };
 
     render() {

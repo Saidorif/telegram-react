@@ -257,6 +257,15 @@ class MessageMenu extends React.PureComponent {
         );
     }
 
+    handleMessageReadParticipants = (chat_id, message_id) => {
+        const response = TdLibController.send({
+            '@type': 'getMessageReadParticipants',
+            chat_id,
+            message_id
+        });
+        console.log('getMessageReadParticipants', response);
+    }
+
     render() {
         const { t, chatId, messageId, anchorPosition, copyLink, open, onClose, source } = this.props;
         const { confirmStopPoll } = this.state;
@@ -274,6 +283,9 @@ class MessageMenu extends React.PureComponent {
         const canCopyLink = Boolean(copyLink);
         const canCopyPublicMessageLink = isPublicSupergroup(chatId);
         const canCopyText = this.handleCanCopyText();
+
+        console.log('message', MessageStore.get(chatId, messageId));
+        this.handleMessageReadParticipants(chatId, messageId);
 
         const hasItems =
             canBeUnvoted || canBeClosed || canBeReplied || canBePinned || canBeForwarded || canBeDeleted || canBeEdited || canBeSelected || canCopyLink || canCopyPublicMessageLink || canCopyText;
@@ -304,12 +316,20 @@ class MessageMenu extends React.PureComponent {
                         {/*    </ListItemIcon>*/}
                         {/*    <ListItemText primary={t('Download')} />*/}
                         {/*</MenuItem>*/}
-                        {canBeSelected && (
-                            <MenuItem onClick={this.handleSelect}>
+                        {canBeReplied && (
+                            <MenuItem onClick={this.handleReply}>
                                 <ListItemIcon>
-                                    <FrameCheckIcon />
+                                    <ShareIcon style={{transform: 'scaleX(-1)'}}/>
                                 </ListItemIcon>
-                                <ListItemText primary={t('Select')} />
+                                <ListItemText primary={t('Reply')} />
+                            </MenuItem>
+                        )}
+                        {canCopyText && (
+                            <MenuItem onClick={this.handleCopyText}>
+                                <ListItemIcon>
+                                    <CopyIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={t('CopyText')} />
                             </MenuItem>
                         )}
                         {canCopyPublicMessageLink && (
@@ -326,22 +346,6 @@ class MessageMenu extends React.PureComponent {
                                     <CopyIcon />
                                 </ListItemIcon>
                                 <ListItemText primary={t('CopyLink')} />
-                            </MenuItem>
-                        )}
-                        {canCopyText && (
-                            <MenuItem onClick={this.handleCopyText}>
-                                <ListItemIcon>
-                                    <CopyIcon />
-                                </ListItemIcon>
-                                <ListItemText primary={t('CopyText')} />
-                            </MenuItem>
-                        )}
-                        {canBeReplied && (
-                            <MenuItem onClick={this.handleReply}>
-                                <ListItemIcon>
-                                    <ShareIcon style={{transform: 'scaleX(-1)'}}/>
-                                </ListItemIcon>
-                                <ListItemText primary={t('Reply')} />
                             </MenuItem>
                         )}
                         {canBePinned && (
@@ -379,14 +383,6 @@ class MessageMenu extends React.PureComponent {
                                 <ListItemText primary={t('Edit')} />
                             </MenuItem>
                         )}
-                        {canBeDeleted && (
-                            <MenuItem color='secondary' onClick={this.handleDelete}>
-                                <ListItemIcon>
-                                    <DeleteIcon />
-                                </ListItemIcon>
-                                <ListItemText primary={t('Delete')} />
-                            </MenuItem>
-                        )}
                         {canBeUnvoted && (
                             <MenuItem onClick={this.handleUnvote}>
                                 <ListItemIcon>
@@ -401,6 +397,22 @@ class MessageMenu extends React.PureComponent {
                                     <StopIcon />
                                 </ListItemIcon>
                                 <ListItemText primary={t('StopPoll')} />
+                            </MenuItem>
+                        )}
+                        {canBeSelected && (
+                            <MenuItem onClick={this.handleSelect}>
+                                <ListItemIcon>
+                                    <FrameCheckIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={t('Select')} />
+                            </MenuItem>
+                        )}
+                        {canBeDeleted && (
+                            <MenuItem color='secondary' onClick={this.handleDelete}>
+                                <ListItemIcon>
+                                    <DeleteIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={t('Delete')} />
                             </MenuItem>
                         )}
                     </MenuList>

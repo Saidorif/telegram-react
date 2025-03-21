@@ -85,7 +85,7 @@ class Filters extends React.Component {
         }
 
         const recommendedFilters = await TdLibController.send({
-            '@type': 'getRecommendedChatFilters'
+            '@type': 'getRecommendedChatFolders'
         });
 
         this.setState({

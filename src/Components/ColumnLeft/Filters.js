@@ -134,10 +134,10 @@ class Filters extends React.Component {
                 item = main.firstChild;
                 left = item.offsetLeft;
             }
-        } else if (chatList['@type'] === 'chatListFilter') {
+        } else if (chatList['@type'] === 'chatListFolder') {
             for (let i = 0; i < filters.length; i++) {
                 const filter = this.filterRef.get('chatListFilter_id=' + filters[i].id);
-                if (filters[i].id === chatList.chat_filter_id) {
+                if (filters[i].id === chatList.chat_folder_id) {
                     item = filter.firstChild;
                     left = item.offsetLeft;
                     break;
@@ -212,7 +212,7 @@ class Filters extends React.Component {
     handleFilterClick = (event, id) => {
         if (event && event.button !== 0) return;
 
-        openChatList({ '@type': 'chatListFilter', chat_filter_id: id });
+        openChatList({ '@type': 'chatListFolder', chat_folder_id: id });
     };
 
     handleWheel = event => {
@@ -247,10 +247,10 @@ class Filters extends React.Component {
                         <div
                             key={x.id}
                             ref={r => this.filterRef.set('chatListFilter_id=' + x.id, r)}
-                            className={classNames('filter', { 'item-selected': chatList.chat_filter_id === x.id})}
+                            className={classNames('filter', { 'item-selected': chatList.chat_folder_id === x.id})}
                             onMouseDown={e => this.handleFilterClick(e, x.id)}
-                            title={isSmallWidth ? x.title : null}>
-                            <span>{isSmallWidth ? getFirstLetter(x.title) : x.title}</span>
+                            title={isSmallWidth ? x.name.text.text : null}>
+                            <span>{isSmallWidth ? getFirstLetter(x.name.text.text) : x.name.text.text}</span>
                         </div>))}
                     <div ref={this.filterSelectionRef} className='filter-selection'/>
                 </div>

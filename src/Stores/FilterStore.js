@@ -38,9 +38,16 @@ class FilterStore extends EventEmitter {
                 break;
             }
             case 'updateChatFilters': {
-                const { chat_filters } = update;
+                const { chat_folders } = update;
 
-                this.filters = chat_filters;
+                this.filters = chat_folders;
+                this.emit('updateChatFilters', update);
+                break;
+            }
+            case 'updateChatFolders': {
+                const { chat_folders } = update;
+
+                this.filters = chat_folders;
                 this.emit('updateChatFilters', update);
                 break;
             }
