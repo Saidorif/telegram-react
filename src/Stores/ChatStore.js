@@ -366,6 +366,10 @@ class ChatStore extends EventEmitter {
                 this.emitFastUpdate(update);
                 break;
             }
+            case 'updateChatAddedToList': {
+                this.emitUpdate(update);
+                break;
+            }
             default:
                 break;
         }

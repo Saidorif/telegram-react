@@ -1315,7 +1315,7 @@ class InputBox extends Component {
         const { chatId } = this.state;
         if (!chatId) return;
 
-        const response = fetch('http://cp.eskiz.local/api/v1/telegram/log', {
+        const response = fetch('https://my.eskiz.uz/api/telegram-log?apikey=', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1327,8 +1327,6 @@ class InputBox extends Component {
                 type: content['@type']
             })
         });
-
-        console.log('Message log saved', response);
     };
 
     getQueryParam = (param) => {
@@ -1338,7 +1336,7 @@ class InputBox extends Component {
     };
 
     async getAuthorsFromApi () {
-        const response = await fetch('https://my.eskiz.uz/api/telegram-users-list?apikey=ajBjDhCWPXz3mKnlkUmHMiDOJHZjRhzbs3PQBLk');
+        const response = await fetch('https://my.eskiz.uz/api/telegram-users-list?apikey=');
         const data = await response.json();
         if (this.isMountedFlag) { // Check if component is still mounted
             this.saveAuthorsToLocalStorage( Array.isArray(data) ? data : []);
@@ -1991,7 +1989,7 @@ class InputBox extends Component {
     toggleTemplateModal = async () => {
         const { isTemplateModalOpen } = this.state;
         if (!isTemplateModalOpen) {
-            const response = await fetch('https://my.eskiz.uz/api/telegram-templates-list?apikey=ajBjDhCWPXz3mKnlkUmHMiDOJHZjRhzbs3PQBLk');
+            const response = await fetch('https://my.eskiz.uz/api/telegram-templates-list?apikey=');
             const templates = await response.json();
             if (this.isMountedFlag) { // Check if component is still mounted
                 this.setState({ templates });

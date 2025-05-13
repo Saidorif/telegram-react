@@ -15,6 +15,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 import Popover from '@material-ui/core/Popover';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ChatTile from './ChatTile';
 import DialogContent from './DialogContent';
 import DialogBadge from './DialogBadge';
@@ -31,6 +32,7 @@ import UserIcon from '../../Assets/Icons/User';
 import GroupIcon from '../../Assets/Icons/Group';
 import MessageIcon from '../../Assets/Icons/Message';
 import UnreadIcon from '../../Assets/Icons/Unread';
+import FilterStore from '../../Stores/FilterStore';
 import {
     canAddChatToList,
     canDeleteChat,
@@ -49,7 +51,9 @@ import {
     leaveChat,
     toggleChatIsMarkedAsUnread,
     toggleChatIsPinned,
-    toggleChatNotificationSettings
+    toggleChatNotificationSettings,
+    getChatListsToAddChat,
+    openChatList
 } from '../../Actions/Chat';
 import { openChat } from '../../Actions/Client';
 import { viewMessages } from '../../Actions/Message';
@@ -68,11 +72,16 @@ class Dialog extends Component {
         this.dialog = React.createRef();
 
         const chat = ChatStore.get(this.props.chatId);
+        const { filters } = FilterStore;
         this.state = {
             chat,
             contextMenu: false,
+            subMenuOpen: false,
             left: 0,
-            top: 0
+            top: 0,
+            subMenuLeft: 0,
+            subMenuTop: 0,
+            filters,
         };
     }
 
@@ -121,10 +130,12 @@ class Dialog extends Component {
 
     componentDidMount() {
         ApplicationStore.on('clientUpdateChatId', this.onClientUpdateChatId);
+        ChatStore.on('updateChatAddedToList', this.onUpdateChatAddedToList);
     }
 
     componentWillUnmount() {
         ApplicationStore.off('clientUpdateChatId', this.onClientUpdateChatId);
+        ChatStore.off('updateChatAddedToList', this.onUpdateChatAddedToList);
     }
 
     onClientUpdateChatId = update => {
@@ -134,6 +145,12 @@ class Dialog extends Component {
             this.forceUpdate();
         }
     };
+
+    onUpdateChatAddedToList = update => {
+        const { chat_id, chat_list } = update;
+        openChatList(chat_list);
+    };
+
 
     handleSelect = event => {
         if (event.button === 0) {
@@ -276,9 +293,43 @@ class Dialog extends Component {
         leaveChat(chatId)
     };
 
+    handleAddToFolder = event => {
+        const { left, top } = this.state;
+        const subMenuLeft = left + 200; // Adjust for submenu positioning
+        const subMenuTop = top;
+
+        this.setState({
+            subMenuOpen: true,
+            subMenuLeft,
+            subMenuTop
+        });
+    };
+
+    handleCloseSubMenu = event => {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        this.setState({ subMenuOpen: false });
+    };
+
+    handleAddChatToList = (id) => {
+        const { chatId } = this.props;
+
+        addChatToList(chatId, { '@type': 'chatListFolder', chat_folder_id: id });
+        //openChatList({ '@type': 'chatListFolder', chat_folder_id: id });
+        this.setState({ subMenuOpen: false, contextMenu: false });
+    };
+
+    handleGetChatListsToAddChat = (chatName) => {
+        const { chatId } = this.props;
+        let response = getChatListsToAddChat(chatId);
+    }
+
+
     render() {
         const { chatId, chatList, showSavedMessages, hidden, t, isLastPinned, style } = this.props;
-        const { contextMenu, left, top, canToggleArchive, canTogglePin, canMute } = this.state;
+        const { contextMenu, left, top, subMenuOpen, subMenuLeft, subMenuTop, canToggleArchive, canTogglePin, canMute, filters } = this.state;
 
         const deleteChat = canDeleteChat(chatId);
         const deleteChatTitle = getDeleteChatTitle(chatId, t);
@@ -289,6 +340,7 @@ class Dialog extends Component {
         const isMuted = isChatMuted(chatId);
         const isUnread = isChatUnread(chatId);
         const isArchived = isChatArchived(chatId);
+
         return (
             <ListItem
                 button
@@ -405,14 +457,13 @@ class Dialog extends Component {
                                     </>
                                 )}
                             </MenuItem>
-                            {/*{clearHistory && (*/}
-                            {/*    <MenuItem onClick={this.handleClearHistory}>*/}
-                            {/*        <ListItemIcon>*/}
-                            {/*            <BroomIcon />*/}
-                            {/*        </ListItemIcon>*/}
-                            {/*        <ListItemText primary={t('ClearHistory')} />*/}
-                            {/*    </MenuItem>*/}
-                            {/*)}*/}
+                            <MenuItem onClick={this.handleAddToFolder}>
+                                <ListItemIcon>
+                                    <UnreadIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={t('addToFolder')} />
+                                <ChevronRightIcon />
+                            </MenuItem>
                             {deleteChat && deleteChatTitle && (
                                 <MenuItem onClick={this.handleDeleteChat}>
                                     <ListItemIcon>
@@ -421,6 +472,28 @@ class Dialog extends Component {
                                     <ListItemText primary={deleteChatTitle} />
                                 </MenuItem>
                             )}
+                        </MenuList>
+                    </Popover>
+                    <Popover
+                        open={subMenuOpen}
+                        onClose={this.handleCloseSubMenu}
+                        anchorReference='anchorPosition'
+                        anchorPosition={{ top: subMenuTop, left: subMenuLeft }}
+                        anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left'
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left'
+                        }}
+                        onMouseDown={e => e.stopPropagation()}>
+                        <MenuList onClick={e => e.stopPropagation()}>
+                            {filters.map(list => (
+                                <MenuItem key={list.id} onClick={() => this.handleAddChatToList(list.id)}>
+                                    <ListItemText primary={list.name.text.text} />
+                                </MenuItem>
+                            ))}
                         </MenuList>
                     </Popover>
             </ListItem>

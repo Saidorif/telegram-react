@@ -270,7 +270,7 @@ class DialogsList extends React.Component {
         } else {
             if (currentIndex === -1) {
                 if (loading) {
-                    console.error(`[vl] skip ${update['@type']}`, { id: chat_id, title: ChatStore.get(chat_id).title, chat: ChatStore.get(chat_id) });
+                    //console.error(`[vl] skip ${update['@type']}`, { id: chat_id, title: ChatStore.get(chat_id).title, chat: ChatStore.get(chat_id) });
                     // TODO: check and add if within loaded part
                 } else {
                     newChatIds.push(chat_id);
@@ -363,7 +363,7 @@ class DialogsList extends React.Component {
             }
         }
 
-        if (type === 'chatListMain') console.log('[vl] GETCHATS start', type, offsetOrder, offsetChatId, offsetChat);
+        //if (type === 'chatListMain') console.log('[vl] GETCHATS start', type, offsetOrder, offsetChatId, offsetChat);
         params.loading = true;
         const result = await TdLibController.send({
             '@type': 'getChats',
@@ -375,7 +375,7 @@ class DialogsList extends React.Component {
                 TdLibController.clientUpdate({ '@type': 'clientUpdateDialogsReady', list: chatList });
             }
         });
-        if (type === 'chatListMain') console.log('[vl] GETCHATS stop', replace, type, result);
+        //if (type === 'chatListMain') console.log('[vl] GETCHATS stop', replace, type, result);
 
         if (params !== this.state.params) {
             // console.log('[folders] onLoadNext cancel', chatList);

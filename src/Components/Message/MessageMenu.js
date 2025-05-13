@@ -46,10 +46,15 @@ import FileStore from '../../Stores/FileStore';
 import MessageStore from '../../Stores/MessageStore';
 import TdLibController from '../../Controllers/TdLibController';
 import './MessageMenu.css';
+import { Chat } from '@material-ui/icons';
+import {getChat} from '../../Actions/Chat';
 
 class MessageMenu extends React.PureComponent {
     state = {
-        confirmStopPoll: false
+        confirmStopPoll: false,
+        loadingViewers: false,
+        viewers: null,
+        viewersMenuAnchor: null // Anchor for the viewers submenu
     };
 
     handleConfirmStopPoll = event => {
@@ -257,18 +262,60 @@ class MessageMenu extends React.PureComponent {
         );
     }
 
-    handleMessageReadParticipants = (chat_id, message_id) => {
-        const response = TdLibController.send({
-            '@type': 'getMessageReadParticipants',
-            chat_id,
-            message_id
-        });
-        console.log('getMessageReadParticipants', response);
-    }
+    handleFetchMessageProperties = async () => {
+        const { chatId, messageId } = this.props;
+
+        this.setState({ loadingViewers: true });
+
+        try {
+            const response = await TdLibController.send({
+                '@type': 'getMessageProperties',
+                chat_id: chatId,
+                message_id: messageId
+            });
+
+            if (response.can_get_viewers) {
+                this.handleFetchMessageViewers();
+            } else {
+                this.setState({ loadingViewers: false, viewers: null });
+            }
+        } catch (error) {
+            console.error('Error fetching message properties:', error);
+            this.setState({ loadingViewers: false });
+        }
+    };
+
+    handleFetchMessageViewers = async () => {
+        const { chatId, messageId } = this.props;
+
+        try {
+            const response = await TdLibController.send({
+                '@type': 'getMessageViewers',
+                chat_id: chatId,
+                message_id: messageId
+            });
+
+            this.setState({
+                loadingViewers: false,
+                viewers: response.viewers || []
+            });
+        } catch (error) {
+            console.error('Error fetching message viewers:', error);
+            this.setState({ loadingViewers: false });
+        }
+    };
+
+    handleOpenViewersMenu = event => {
+        this.setState({ viewersMenuAnchor: event.currentTarget });
+    };
+
+    handleCloseViewersMenu = () => {
+        this.setState({ viewersMenuAnchor: null });
+    };
 
     render() {
         const { t, chatId, messageId, anchorPosition, copyLink, open, onClose, source } = this.props;
-        const { confirmStopPoll } = this.state;
+        const { confirmStopPoll, loadingViewers, viewers, viewersMenuAnchor } = this.state;
         if (!confirmStopPoll && !open) return null;
 
         const isPinned = isMessagePinned(chatId, messageId);
@@ -284,11 +331,9 @@ class MessageMenu extends React.PureComponent {
         const canCopyPublicMessageLink = isPublicSupergroup(chatId);
         const canCopyText = this.handleCanCopyText();
 
-        console.log('message', MessageStore.get(chatId, messageId));
-        this.handleMessageReadParticipants(chatId, messageId);
-
         const hasItems =
-            canBeUnvoted || canBeClosed || canBeReplied || canBePinned || canBeForwarded || canBeDeleted || canBeEdited || canBeSelected || canCopyLink || canCopyPublicMessageLink || canCopyText;
+            canBeUnvoted || canBeClosed || canBeReplied || canBePinned || canBeForwarded || canBeDeleted || canBeEdited || canBeSelected || canCopyLink || canCopyPublicMessageLink || canCopyText || loadingViewers || viewers;
+
         if (!hasItems) {
             return null;
         }
@@ -407,6 +452,20 @@ class MessageMenu extends React.PureComponent {
                                 <ListItemText primary={t('Select')} />
                             </MenuItem>
                         )}
+                        <MenuItem onClick={this.handleFetchMessageProperties}>
+                            <ListItemIcon>
+                                <FrameCheckIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={loadingViewers ? t('Loading') : t('Viewers')} />
+                        </MenuItem>
+                        {viewers && viewers.length > 0 && (
+                            <MenuItem onClick={this.handleOpenViewersMenu}>
+                                <ListItemIcon>
+                                    <FrameCheckIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={t('ViewersList')} />
+                            </MenuItem>
+                        )}
                         {canBeDeleted && (
                             <MenuItem color='secondary' onClick={this.handleDelete}>
                                 <ListItemIcon>
@@ -415,6 +474,31 @@ class MessageMenu extends React.PureComponent {
                                 <ListItemText primary={t('Delete')} />
                             </MenuItem>
                         )}
+                    </MenuList>
+                </Popover>
+                <Popover
+                    open={Boolean(viewersMenuAnchor)}
+                    anchorEl={viewersMenuAnchor}
+                    onClose={this.handleCloseViewersMenu}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left'
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right'
+                    }}
+                    onMouseDown={e => e.stopPropagation()}>
+                    <MenuList onClick={e => e.stopPropagation()}>
+                        {viewers &&
+                            viewers.map((viewer, index) => (
+                                <MenuItem key={index}>
+                                    <ListItemText
+                                        primary={`User ID: ${viewer.user_id}`}
+                                        secondary={`View Date: ${new Date(viewer.view_date * 1000).toLocaleString()}`}
+                                    />
+                                </MenuItem>
+                            ))}
                     </MenuList>
                 </Popover>
                 <Dialog

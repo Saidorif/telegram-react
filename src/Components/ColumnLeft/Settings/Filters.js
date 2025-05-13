@@ -221,10 +221,10 @@ class Filters extends React.Component {
         const { t, onClose } = this.props;
         const { recommendedFilters, openFilter, filter, filterId, data, chats, filtersMap } = this.state;
         const { filters } = FilterStore;
-        
 
         const hasFilters = filters && filters.length > 0;
         const hasRecommendedFilters = recommendedFilters
+            && recommendedFilters.chat_filters
             && recommendedFilters.chat_filters.length > 0
             && (!filters || filters.length < FILTER_COUNT_MAX);
 

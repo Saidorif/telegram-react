@@ -103,6 +103,13 @@ export function addChatToList(chatId, chatList) {
     });
 }
 
+export function getChatListsToAddChat(chatId) {
+    TdLibController.send({
+        '@type': 'getChatListsToAddChat',
+        chat_id: chatId
+    });
+}
+
 export function toggleChatIsPinned(chatId, chatList, isPinned) {
     TdLibController.send({
         '@type': 'toggleChatIsPinned',
