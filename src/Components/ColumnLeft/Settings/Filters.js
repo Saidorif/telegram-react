@@ -70,10 +70,11 @@ class Filters extends React.Component {
         });
 
         const { filters: filterInfo } = FilterStore;
+        console.log('Filters loadData', FilterStore);
         const promises = [];
         for (let i = 0; filterInfo && i < filterInfo.length; i++) {
             promises.push(TdLibController.send({
-                '@type': 'getChatFilter',
+                '@type': 'getChatFolder',
                 chat_filter_id: filterInfo[i].id
             }).catch(e => null));
         }
@@ -123,8 +124,9 @@ class Filters extends React.Component {
             return;
         }
 
+        // Fix typo and structure
         const filter = {
-            '@type': 'chatFiler',
+            '@type': 'chatFolder',
             title: '',
             icon_name: '',
             pinned_chat_ids: [],
@@ -156,9 +158,10 @@ class Filters extends React.Component {
     };
 
     handleEditFilter = async info => {
+        // Use chat_filter_id for consistency
         const filter = await TdLibController.send({
-            '@type': 'getChatFilter',
-            chat_filter_id: info.id
+            '@type': 'getChatFolder',
+            chat_folder_id: info.id
         });
 
         if (!filter) return;
@@ -177,15 +180,33 @@ class Filters extends React.Component {
         if (!filter) return;
 
         if (filterId !== -1) {
+            filter.name = {
+                "@type": "chatFolderName",
+                "text": {
+                    "@type": "formattedText",
+                    "text": filter.title,
+                    "entities": []
+                },
+                "animate_custom_emoji": true
+            }
             TdLibController.send({
-                '@type': 'editChatFilter',
-                chat_filter_id: filterId,
-                filter
+                '@type': 'editChatFolder',
+                chat_folder_id: filterId,
+                folder: filter
             });
         } else {
+            filter.name = {
+                "@type": "chatFolderName",
+                "text": {
+                    "@type": "formattedText",
+                    "text": filter.title,
+                    "entities": []
+                },
+                "animate_custom_emoji": true
+            }
             TdLibController.send({
-                '@type': 'createChatFilter',
-                filter
+                '@type': 'createChatFolder',
+                folder: filter
             });
         }
     };
@@ -218,6 +239,8 @@ class Filters extends React.Component {
     };
 
     render() {
+        console.log('Filters render', this.state);
+        
         const { t, onClose } = this.props;
         const { recommendedFilters, openFilter, filter, filterId, data, chats, filtersMap } = this.state;
         const { filters } = FilterStore;

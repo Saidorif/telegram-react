@@ -23,8 +23,8 @@ class RecommendedFilter extends React.Component {
         const { filter } = recommendedFilter;
 
         TdLibController.send({
-            '@type': 'createChatFilter',
-            filter
+            '@type': 'createChatFolder',
+            folder: filter
         });
     };
 

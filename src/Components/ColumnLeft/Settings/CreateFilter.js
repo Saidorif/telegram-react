@@ -45,6 +45,7 @@ class CreateFilter extends React.Component {
         this.titleRef = React.createRef();
         this.lottieRef = React.createRef();
 
+        // Initialize editFilter from props.filter or default
         this.state = {
             prevFilterId: -1,
             data: null,
@@ -54,7 +55,25 @@ class CreateFilter extends React.Component {
             error: false,
             shook: false,
             chats: [],
-            limit: 0
+            limit: 0,
+            editFilter: props.filter
+                ? { ...props.filter }
+                : {
+                    '@type': 'chatFolder',
+                    title: '',
+                    icon_name: '',
+                    pinned_chat_ids: [],
+                    included_chat_ids: [],
+                    excluded_chat_ids: [],
+                    exclude_muted: false,
+                    exclude_read: false,
+                    exclude_archived: false,
+                    include_contacts: false,
+                    include_non_contacts: false,
+                    include_bots: false,
+                    include_groups: false,
+                    include_channels: false
+                }
         }
     }
 
@@ -63,10 +82,17 @@ class CreateFilter extends React.Component {
         const { prevFilterId } = state;
 
         if (filter && prevFilterId !== filterId){
+            // Extract title from editFilter.name.text.text if present, else fallback to filter.title or ''
+            let title = '';
+            if (filter.name && filter.name.text && typeof filter.name.text.text === 'string') {
+                title = filter.name.text.text;
+            } else if (typeof filter.title === 'string') {
+                title = filter.title;
+            }
             return {
                 prevFilterId: filterId,
-                editFilter: {...filter},
-                title: filter.title
+                editFilter: { ...filter },
+                title
             }
         }
 
@@ -111,6 +137,7 @@ class CreateFilter extends React.Component {
             })
         }
 
+        // Always update editFilter.title before sending
         editFilter.title = title;
 
         if (!isFilterValid(editFilter)) {
@@ -118,7 +145,8 @@ class CreateFilter extends React.Component {
             return;
         }
 
-        onDone && onDone(editFilter);
+        // Send the latest editFilter (with included_chat_ids)
+        onDone && onDone({ ...editFilter });
     };
 
     handleAnimationClick = () => {
@@ -480,6 +508,9 @@ class CreateFilter extends React.Component {
         if (!filter) return null;
 
         const { editFilter, data, openFilterChats, mode, chats, limit, title, error, shook } = this.state;
+        const filterTitle = editFilter && editFilter.name && editFilter.name.text && editFilter.name.text.text ? editFilter.name.text.text : '';
+
+        console.log('CreateFilter render', this.state);
 
         const {
             include_contacts,

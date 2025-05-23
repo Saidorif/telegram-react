@@ -57,14 +57,15 @@ class Filter extends React.Component {
     };
 
     handleDeleteConfirm = () => {
+        console.log('Delete filter', this.state, this.props);
         const { info } = this.props;
         if (!info) return;
 
         this.handleCloseDialog();
-
         TdLibController.send({
-            '@type': 'deleteChatFilter',
-            chat_filter_id: info.id
+            '@type': 'deleteChatFolder',
+            chat_folder_id: info.id,
+            leave_chat_ids: []
         });
     };
 
@@ -90,12 +91,14 @@ class Filter extends React.Component {
     };
 
     render() {
+        console.log('Filter render', this.props);
         const { t, info, onEdit, chats } = this.props;
         if (!info) return null;
 
         const { dialog, contextMenu, top, left } = this.state;
 
-        const { title } = info;
+        // Safely extract title from info object without optional chaining
+        const title = info && info.name && info.name.text && info.name.text.text ? info.name.text.text : '';
         const subtitle = getFilterSubtitle(t, info.id, chats);
 
         return (
