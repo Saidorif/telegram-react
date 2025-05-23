@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "80e1da3c9be456915e613914b6dba713",
+    "revision": "92298492cce1837c49bc4b7b184516d6",
     "url": "/Saidorif/telegram-react/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/Saidorif/telegram-react/static/css/0.52c23fd6.chunk.css"
   },
   {
-    "revision": "648da289c648f37eacc9",
+    "revision": "f83d783e51454b155aab",
     "url": "/Saidorif/telegram-react/static/css/4.56fdb9a7.chunk.css"
   },
   {
@@ -32,8 +32,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/Saidorif/telegram-react/static/js/3.fc4d7ea4.chunk.js"
   },
   {
-    "revision": "648da289c648f37eacc9",
-    "url": "/Saidorif/telegram-react/static/js/4.9dbeb8ca.chunk.js"
+    "revision": "f83d783e51454b155aab",
+    "url": "/Saidorif/telegram-react/static/js/4.759b3291.chunk.js"
   },
   {
     "revision": "c7b7269d11a61d0881b3",
@@ -52,8 +52,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/Saidorif/telegram-react/static/js/main.5ee54074.chunk.js"
   },
   {
-    "revision": "05459494c8190d756091",
-    "url": "/Saidorif/telegram-react/static/js/runtime~main.331fef42.js"
+    "revision": "b770cfbdeb670a390062",
+    "url": "/Saidorif/telegram-react/static/js/runtime~main.7c4a2105.js"
   },
   {
     "revision": "85479cc199de7ace1a44d901720601b8",
